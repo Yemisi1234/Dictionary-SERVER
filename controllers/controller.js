@@ -3,7 +3,7 @@ import { DictionaryEntry } from "../model/dictionary-model.js";
 const popularSearches = [];
 export const searchTerm = async (req, res) => {
   try {
-    const term = req.params.term.toLowerCase();
+    const term = req.params.searchTerm.toLowerCase();
     const entry = await DictionaryEntry.findOne({ term });
 
     if (!entry) {
