@@ -2,15 +2,19 @@ import mongoose from "mongoose";
 import dotenv from "dotenv";
 
 dotenv.config();
+// const DB_URL = process.env.DB_URL;
 
-async function connectToDatabase() {
+const DB_URL = `mongodb+srv://user1234:test1234@cluster0.ffwwp.mongodb.net/${process.env.DB_NAME}?retryWrites=true&w=majority&appName=Cluster0`;
+function connectToDatabase() {
   try {
-    await mongoose.connect(process.env.DB_URL, {});
+    mongoose.connect(DB_URL, {});
     console.log("Mongoose connected to " + process.env.DB_NAME);
   } catch (err) {
     console.error("Mongoose connection error: ", err);
   }
-
+  mongoose.connection.on("connected", function () {
+    console.log("Mongoose connected");
+  });
   mongoose.connection.on("disconnected", function () {
     console.log("Mongoose disconnected");
   });

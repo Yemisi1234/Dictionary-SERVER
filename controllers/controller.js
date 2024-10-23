@@ -1,4 +1,6 @@
+import mongoose from "mongoose";
 import { DictionaryEntry } from "../model/dictionary-model.js";
+const popularSearches = [];
 export const searchTerm = async (req, res) => {
   try {
     const term = req.params.term.toLowerCase();
@@ -38,12 +40,9 @@ export const addEntry = async (req, res) => {
 
 export const getPopularSearches = async (req, res) => {
   try {
-    console.log("step1");
-    const result = await DictionaryEntry.find();
-    console.log("step2");
+    const result = await mongoose.model("Word").find({});
     return res.status(200).json(result);
   } catch (error) {
-    console.log("step3");
     console.error("Error fetching popular searches:", error);
     res.status(500).json({ error: "Failed to fetch popular searches" });
   }

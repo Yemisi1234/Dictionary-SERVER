@@ -23,4 +23,3 @@ export const DictionaryEntry = mongoose.model(
   dictionarySchema,
   "words"
 );
-console.log(DictionaryEntry, "DictionaryEntry");
