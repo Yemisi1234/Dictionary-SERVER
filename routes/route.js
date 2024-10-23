@@ -7,10 +7,8 @@ import {
 
 const router = express.Router();
 
+router.get("/entries/popularSearches", getPopularSearches);
 router.get("/entries/:searchTerm", searchTerm);
 
 router.post("/entries", addEntry);
-
-router.get("/entries/popularSearches", getPopularSearches);
-
 export default router;

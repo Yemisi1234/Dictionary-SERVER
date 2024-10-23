@@ -40,7 +40,7 @@ export const addEntry = async (req, res) => {
 
 export const getPopularSearches = async (req, res) => {
   try {
-    const result = await mongoose.model("Word").find({});
+    const result = await DictionaryEntry.find();
     return res.status(200).json(result);
   } catch (error) {
     console.error("Error fetching popular searches:", error);
