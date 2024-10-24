@@ -19,22 +19,39 @@ export const addEntry = async (req, res, next) => {
 
 export const searchTerm = async (req, res, next) => {
   try {
-    const term = req.params.searchTerm.toLowerCase();
-    const entry = await DictionaryEntry.findOneAndUpdate(
-      { term },
-      { $inc: { searchCount: 1 } },
-      { new: true }
-    );
+    const searchTerm = req.params.searchTerm.toLowerCase();
 
-    if (!entry) {
+    const entries = await DictionaryEntry.find({
+      word: { $regex: new RegExp(`^${searchTerm}$`, "i") },
+    }).select({
+      word: 1,
+      definition: 1,
+      definitions: 1,
+      searchCount: 1,
+    });
+
+    if (!entries || entries.length === 0) {
       return res.json({
-        term,
+        term: searchTerm,
         definitions: ["No definition found."],
         searchCount: 0,
       });
     }
 
-    res.json(entry);
+    const definitions = entries.flatMap((entry) => [entry]);
+    const totalSearchCount =
+      entries.reduce((acc, entry) => acc + (entry.searchCount || 0), 0) + 1;
+
+    await DictionaryEntry.updateMany(
+      { word: { $regex: new RegExp(`^${searchTerm}$`, "i") } },
+      { $inc: { searchCount: 1 } }
+    );
+
+    res.json({
+      term: searchTerm,
+      definitions,
+      searchCount: totalSearchCount,
+    });
   } catch (error) {
     next(error);
   }
@@ -64,6 +81,15 @@ export const getTopPopularSearches = async (req, res, next) => {
     }
 
     res.status(200).json(randomSearches);
+  } catch (error) {
+    next(error);
+  }
+};
+
+export const getAllEntries = async (req, res, next) => {
+  try {
+    const entries = await DictionaryEntry.find();
+    res.status(200).json(entries);
   } catch (error) {
     next(error);
   }
