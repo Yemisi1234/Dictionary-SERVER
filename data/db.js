@@ -2,7 +2,6 @@ import mongoose from "mongoose";
 import dotenv from "dotenv";
 
 dotenv.config();
-// const DB_URL = process.env.DB_URL;
 
 const DB_URL = `mongodb+srv://user1234:test1234@cluster0.ffwwp.mongodb.net/${process.env.DB_NAME}?retryWrites=true&w=majority&appName=Cluster0`;
 function connectToDatabase() {

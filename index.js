@@ -14,8 +14,16 @@ app.use(cors());
 app.use(urlencoded({ extended: true }));
 app.use(express.json());
 app.use("/api", router);
+
+app.use((req, res) => {
+  res.status(404).json({ message: "Route not found" });
+});
+
 app.use((err, req, res, next) => {
-  res.status(500).send("An internal server error occurred");
+  res.status(500).json({
+    error: "An internal server error occurred",
+    message: err.message,
+  });
 });
 
 app.listen(PORT, () => {

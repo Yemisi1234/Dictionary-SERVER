@@ -1,27 +1,7 @@
 import mongoose from "mongoose";
 import { DictionaryEntry } from "../model/dictionary-model.js";
-const popularSearches = [];
-export const searchTerm = async (req, res) => {
-  try {
-    const term = req.params.searchTerm.toLowerCase();
-    const entry = await DictionaryEntry.findOne({ term });
 
-    if (!entry) {
-      return res.json({ term, definitions: ["No definition found."] });
-    }
-
-    if (!popularSearches.includes(term)) {
-      popularSearches.push(term);
-    }
-
-    res.json(entry);
-  } catch (error) {
-    console.error("Search Error:", error);
-    res.status(500).json({ error: "Internal Server Error" });
-  }
-};
-
-export const addEntry = async (req, res) => {
+export const addEntry = async (req, res, next) => {
   try {
     const { term, definitions } = req.body;
 
@@ -33,34 +13,41 @@ export const addEntry = async (req, res) => {
     await newEntry.save();
     res.status(201).json({ message: "Entry added successfully!" });
   } catch (error) {
-    console.error("Add Entry Error:", error);
-    res.status(500).json({ error: "Error adding entry" });
+    next(error);
   }
 };
 
-export const getPopularSearches = async (req, res) => {
+export const searchTerm = async (req, res, next) => {
   try {
-    const allEntries = await DictionaryEntry.find();
-    const randomEntries = [];
+    const term = req.params.searchTerm.toLowerCase();
+    const entry = await DictionaryEntry.findOneAndUpdate(
+      { term },
+      { $inc: { searchCount: 1 } },
+      { new: true }
+    );
 
-    while (randomEntries.length < 10 && allEntries.length > 0) {
-      const randomIndex = Math.floor(Math.random() * allEntries.length);
-      randomEntries.push(allEntries[randomIndex]);
-      allEntries.splice(randomIndex, 1);
+    if (!entry) {
+      return res.json({
+        term,
+        definitions: ["No definition found."],
+        searchCount: 0,
+      });
     }
 
-    return res.status(200).json(randomEntries);
+    res.json(entry);
   } catch (error) {
-    console.error("Error fetching popular searches:", error);
-    res.status(500).json({ error: "Failed to fetch popular searches" });
+    next(error);
   }
 };
-// export const getPopularSearches = async (req, res) => {
-//   try {
-//     const result = await DictionaryEntry.find().limit(10);
-//     return res.status(200).json(result);
-//   } catch (error) {
-//     console.error("Error fetching popular searches:", error);
-//     res.status(500).json({ error: "Failed to fetch popular searches" });
-//   }
-// };
+
+export const getTopPopularSearches = async (req, res, next) => {
+  try {
+    const topSearches = await DictionaryEntry.find()
+      .sort({ searchCount: -1 })
+      .limit(10);
+
+    res.status(200).json(topSearches);
+  } catch (error) {
+    next(error);
+  }
+};
