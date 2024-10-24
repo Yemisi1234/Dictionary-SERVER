@@ -42,11 +42,28 @@ export const searchTerm = async (req, res, next) => {
 
 export const getTopPopularSearches = async (req, res, next) => {
   try {
-    const topSearches = await DictionaryEntry.find()
-      .sort({ searchCount: -1 })
+    const totalCount = await DictionaryEntry.countDocuments({
+      searchCount: { $gt: 4 },
+    });
+
+    const randomSkip = Math.floor(Math.random() * Math.max(totalCount - 10, 0));
+
+    const randomSearches = await DictionaryEntry.find({
+      searchCount: { $gt: 4 },
+    })
+      .skip(randomSkip)
       .limit(10);
 
-    res.status(200).json(topSearches);
+    if (randomSearches.length < 10) {
+      const remainingSearches = await DictionaryEntry.find()
+        .sort({ searchCount: -1 })
+        .limit(10 - randomSearches.length);
+
+      const combined = [...randomSearches, ...remainingSearches];
+      return res.status(200).json(combined);
+    }
+
+    res.status(200).json(randomSearches);
   } catch (error) {
     next(error);
   }
