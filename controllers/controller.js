@@ -40,10 +40,27 @@ export const addEntry = async (req, res) => {
 
 export const getPopularSearches = async (req, res) => {
   try {
-    const result = await DictionaryEntry.find().limit(10);
-    return res.status(200).json(result);
+    const allEntries = await DictionaryEntry.find();
+    const randomEntries = [];
+
+    while (randomEntries.length < 10 && allEntries.length > 0) {
+      const randomIndex = Math.floor(Math.random() * allEntries.length);
+      randomEntries.push(allEntries[randomIndex]);
+      allEntries.splice(randomIndex, 1);
+    }
+
+    return res.status(200).json(randomEntries);
   } catch (error) {
     console.error("Error fetching popular searches:", error);
     res.status(500).json({ error: "Failed to fetch popular searches" });
   }
 };
+// export const getPopularSearches = async (req, res) => {
+//   try {
+//     const result = await DictionaryEntry.find().limit(10);
+//     return res.status(200).json(result);
+//   } catch (error) {
+//     console.error("Error fetching popular searches:", error);
+//     res.status(500).json({ error: "Failed to fetch popular searches" });
+//   }
+// };
